@@ -23,9 +23,12 @@ namespace ShearwaterDiveLogExporter
             Console.WriteLine($"Found {shearwaterDiveLogs.Count} dives in Shearwater database.");
 
             var summaryCsvString = new StringBuilder();
+            var tankCsvString = new StringBuilder();
             var samplesCsvString = new StringBuilder();
 
+
             summaryCsvString.AppendLine(new ExportedDiveLogSummary().ToCsvHeader());
+            tankCsvString.AppendLine(new ExportedDiveLogTank().ToCsvHeader());
             samplesCsvString.AppendLine(new ExportedDiveLogSample().ToCsvHeader());
 
             foreach (var shearwaterDiveLog in shearwaterDiveLogs)
@@ -33,12 +36,18 @@ namespace ShearwaterDiveLogExporter
                 var shearwaterDiveLogSamples = shearwaterDataService.GetDiveLogRecordsWithRaw(shearwaterDiveLog.DiveID);
                 var exportedDiveLog = new ExportedDiveLog(shearwaterDiveLog, shearwaterDiveLogSamples);
                 summaryCsvString.AppendLine(exportedDiveLog.Summary.ToCsvRow());
+                tankCsvString.AppendLine(exportedDiveLog.Tank.ToCsvRow());
                 samplesCsvString.AppendLine(exportedDiveLog.Samples.ToCsvRows());
-                Console.WriteLine($"-----Exported dive #{DiveLogMetaDataResolver.GetDiveNumber(shearwaterDiveLog)} with {shearwaterDiveLogSamples.Count} samples");
             }
-
-            File.WriteAllText(Path.Combine(args[1], "shearwater-export-summary.csv"), summaryCsvString.ToString());
-            File.WriteAllText(Path.Combine(args[1], "shearwater-export-samples.csv"), samplesCsvString.ToString());
+            var destDir = args[1];
+            if (!destDir.EndsWith(Path.DirectorySeparatorChar.ToString()))
+            {
+                destDir += Path.DirectorySeparatorChar;
+            }
+            Console.WriteLine($"Writing export files to {destDir}...");
+            File.WriteAllText(Path.Combine(destDir, "shearwater-export-summary.csv"), summaryCsvString.ToString());
+            File.WriteAllText(Path.Combine(destDir, "shearwater-export-tanks.csv"), tankCsvString.ToString());
+            File.WriteAllText(Path.Combine(destDir, "shearwater-export-samples.csv"), samplesCsvString.ToString());
             Console.WriteLine("Export complete.");
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Assets.DeepLinkingForWindows;
 using Assets.Scripts.DiveLogs.Utils.DiveLogUtils;
 using Assets.Scripts.DiveLogs.Utils.Gases;
 using Assets.Scripts.Utility;
@@ -16,7 +17,7 @@ namespace ShearwaterDiveLogExporter
     {
         public ExportedDiveLogSummary Summary { get; set; }
 
-        public ExportedDiveLogTankProfile Profile { get; set; }
+        public ExportedDiveLogTank Tank { get; set; }
 
         public List<ExportedDiveLogSample> Samples { get; set; }
 
@@ -83,6 +84,43 @@ namespace ShearwaterDiveLogExporter
                 Features = finalLog.Features,
             };
 
+            Tank = new ExportedDiveLogTank
+            {
+                Number = Summary.Number,
+
+                Tank1Enabled = tankProfileData.TankData[0].DiveTransmitter.IsOn,
+                Tank1TransmitterName = tankProfileData.TankData[0].DiveTransmitter.Name,
+                Tank1TransmitterSerialNumber = DiveLogSerialNumberUtil.FormatAiSerialNumber(shearwaterDiveLog, tankProfileData.TankData[0].DiveTransmitter.UnformattedSerialNumber),
+                Tank1AverageDepthInMeters = tankProfileData.TankData[0].GasProfile.AverageDepthInMeters,
+                Tank1GasO2Percent = tankProfileData.TankData[0].GasProfile.O2Percent,
+                Tank1GasHePercent = tankProfileData.TankData[0].GasProfile.HePercent,
+                Tank1GasN2Percent = 100 - tankProfileData.TankData[0].GasProfile.O2Percent - tankProfileData.TankData[0].GasProfile.HePercent,
+
+                Tank2Enabled = tankProfileData.TankData[1].DiveTransmitter.IsOn,
+                Tank2TransmitterName = tankProfileData.TankData[1].DiveTransmitter.Name,
+                Tank2TransmitterSerialNumber = DiveLogSerialNumberUtil.FormatAiSerialNumber(shearwaterDiveLog, tankProfileData.TankData[1].DiveTransmitter.UnformattedSerialNumber),
+                Tank2AverageDepthInMeters = tankProfileData.TankData[1].GasProfile.AverageDepthInMeters,
+                Tank2GasO2Percent = tankProfileData.TankData[1].GasProfile.O2Percent,
+                Tank2GasHePercent = tankProfileData.TankData[1].GasProfile.HePercent,
+                Tank2GasN2Percent = 100 - tankProfileData.TankData[1].GasProfile.O2Percent - tankProfileData.TankData[1].GasProfile.HePercent,
+
+                Tank3Enabled = tankProfileData.TankData[2].DiveTransmitter.IsOn,
+                Tank3TransmitterName = tankProfileData.TankData[2].DiveTransmitter.Name,
+                Tank3TransmitterSerialNumber = DiveLogSerialNumberUtil.FormatAiSerialNumber(shearwaterDiveLog, tankProfileData.TankData[2].DiveTransmitter.UnformattedSerialNumber),
+                Tank3AverageDepthInMeters = tankProfileData.TankData[2].GasProfile.AverageDepthInMeters,
+                Tank3GasO2Percent = tankProfileData.TankData[2].GasProfile.O2Percent,
+                Tank3GasHePercent = tankProfileData.TankData[2].GasProfile.HePercent,
+                Tank3GasN2Percent = 100 - tankProfileData.TankData[2].GasProfile.O2Percent - tankProfileData.TankData[2].GasProfile.HePercent,
+
+                Tank4Enabled = tankProfileData.TankData[3].DiveTransmitter.IsOn,
+                Tank4TransmitterName = tankProfileData.TankData[3].DiveTransmitter.Name,
+                Tank4TransmitterSerialNumber = DiveLogSerialNumberUtil.FormatAiSerialNumber(shearwaterDiveLog, tankProfileData.TankData[3].DiveTransmitter.UnformattedSerialNumber),
+                Tank4AverageDepthInMeters = tankProfileData.TankData[3].GasProfile.AverageDepthInMeters,
+                Tank4GasO2Percent = tankProfileData.TankData[3].GasProfile.O2Percent,
+                Tank4GasHePercent = tankProfileData.TankData[3].GasProfile.HePercent,
+                Tank4GasN2Percent = 100 - tankProfileData.TankData[3].GasProfile.O2Percent - tankProfileData.TankData[3].GasProfile.HePercent,
+            };
+
             Samples = new List<ExportedDiveLogSample>();
 
             foreach (var shearwaterDiveLogSample in shearwaterDiveLogSamples)
@@ -94,6 +132,11 @@ namespace ShearwaterDiveLogExporter
 
                 var absolutePressureInAta = GasUtil.GetAbsolutePressureATA((float)header.SurfacePressure, ConvertDepthToMeters(header, shearwaterDiveLogSample.Depth), false);
                 var partialPressures = GasUtil.FindInertGasPartialPressures(shearwaterDiveLogSample.AveragePPO2, absolutePressureInAta, shearwaterDiveLogSample.FractionO2, shearwaterDiveLogSample.FractionHe);
+                var tank1Message = DiveLogGasMessageRetrieverMod.Get_Tank0_Message(shearwaterDiveLogSample);
+                var tank2Message = DiveLogGasMessageRetrieverMod.Get_Tank1_Message(shearwaterDiveLogSample);
+                var tank3Message = DiveLogGasMessageRetrieverMod.Get_Tank2_Message(shearwaterDiveLogSample);
+                var tank4Message = DiveLogGasMessageRetrieverMod.Get_Tank3_Message(shearwaterDiveLogSample);
+                var sacMessage = DiveLogGasMessageRetrieverMod.Get_SAC_Message(shearwaterDiveLogSample);
 
                 Samples.Add(new ExportedDiveLogSample
                 {
@@ -109,11 +152,14 @@ namespace ShearwaterDiveLogExporter
                     PPO2 = shearwaterDiveLogSample.AveragePPO2,
                     PPN2 = partialPressures.ppN2ATA,
                     PPHE = partialPressures.ppHeATA,
-                    TankPressureInBar = DiveLogGasMessageRetrieverMod.Get_Tank0_Message(shearwaterDiveLogSample),
-                    SAC = DiveLogGasMessageRetrieverMod.Get_SAC_Message(shearwaterDiveLogSample),
+                    Tank1PressureInBar = int.TryParse(tank1Message, out int tank1PressureInPSI) ? UnitConverter.ConvertTankUnits(tank1PressureInPSI, SettingDefinitions.TankUnits.Bar) : 0,
+                    Tank2PressureInBar = int.TryParse(tank2Message, out int tank2PressureInPSI) ? UnitConverter.ConvertTankUnits(tank2PressureInPSI, SettingDefinitions.TankUnits.Bar) : 0,
+                    Tank3PressureInBar = int.TryParse(tank3Message, out int tank3PressureInPSI) ? UnitConverter.ConvertTankUnits(tank3PressureInPSI, SettingDefinitions.TankUnits.Bar) : 0,
+                    Tank4PressureInBar = int.TryParse(tank4Message, out int tank4PressureInPSI) ? UnitConverter.ConvertTankUnits(tank4PressureInPSI, SettingDefinitions.TankUnits.Bar) : 0,
+                    SAC = int.TryParse(sacMessage, out int sacInPSI) ? UnitConverter.ConvertTankUnits(sacInPSI, SettingDefinitions.TankUnits.Bar) : 0,
                     Temperature = shearwaterDiveLogSample.WaterTemperature,
                     BatteryVoltage = shearwaterDiveLogSample.BatteryVoltage,
-                    GasTimeRemainingInMinutes = DiveLogGasMessageRetrieverMod.Get_GasTime_Message(shearwaterDiveLogSample),
+                    GasTimeRemainingInMinutes = int.TryParse(DiveLogGasMessageRetrieverMod.Get_GasTime_Message(shearwaterDiveLogSample), out int gasTimeRemaining) ? gasTimeRemaining : 0
                 });
             }
         }
