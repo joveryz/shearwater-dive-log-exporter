@@ -15,7 +15,7 @@ namespace DiveLogExporter
 
         public static string ToCsvRow(this object obj)
         {
-            if(obj == null)
+            if (obj == null)
             {
                 return string.Empty;
             }

@@ -1,15 +1,10 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using Assets.Scripts.DiveLogs.Utils.DiveLogUtils;
+﻿using Assets.Scripts.DiveLogs.Utils.DiveLogUtils;
 using Assets.Scripts.DiveLogs.Utils.Gases;
-using Assets.Scripts.DiveLogs.Utils.Gases.Models;
 using Assets.Scripts.Utility;
 using Assets.ShearwaterCloud.Modules.Graphs.DiveGraph.GraphAssembly.GraphDataAssembly.SeriesSampleAssemblers;
 using CoreParserUtilities;
 using DiveLogModels;
 using ExtendedCoreParserUtilities;
-using Newtonsoft.Json.Linq;
 using ShearwaterUtils;
 using static ShearwaterUtils.SettingDefinitions;
 

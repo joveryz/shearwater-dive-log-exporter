@@ -2,7 +2,6 @@
 using System.IO;
 using System.Text;
 using Assets.Scripts.Persistence.LocalCache;
-using ExtendedCoreParserUtilities;
 
 namespace DiveLogExporter
 {
