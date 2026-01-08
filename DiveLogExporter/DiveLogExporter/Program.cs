@@ -41,14 +41,14 @@ namespace DiveLogExporter
                 }
             });
 
-            AdjustDiveLogNumbers(diveLogs);
+            AdjustDiveLogNumbers(ref diveLogs);
             ExportDiveLogsToCsvFiles(diveLogs, outputPath);
 
             Console.WriteLine($"[Main] Total dive logs parsed: {diveLogs.Count}");
             return 0;
         }
 
-        private static void AdjustDiveLogNumbers(List<GeneralDiveLog> diveLogs)
+        private static void AdjustDiveLogNumbers(ref List<GeneralDiveLog> diveLogs)
         {
             diveLogs = diveLogs.OrderBy(diveLog => DateTime.Parse(diveLog.Summary.StartDate)).ToList();
 
@@ -83,7 +83,8 @@ namespace DiveLogExporter
 
                 currentNumber++;
             }
-            diveLogs = diveLogs.OrderBy(diveLog => diveLog.Summary.Number).ToList();
+
+            diveLogs = diveLogs.OrderBy(diveLog => diveLog.Summary.Number.Value).ToList();
         }
 
         private static void ExportDiveLogsToCsvFiles(List<GeneralDiveLog> diveLogs, string outputPath)

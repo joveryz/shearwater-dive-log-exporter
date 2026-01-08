@@ -50,6 +50,29 @@ namespace Shearwater
 
         public static string GetDiveMode(DiveLog diveLog) => DiveLogModeUtils.GetModeName(diveLog.DiveLogHeader.Mode, diveLog.DiveLogHeader.OCRecSubMode, DiveLogMetaDataResolver.GetLogVersion(diveLog));
 
+        public static string GetDiver(DiveLog diveLog)
+        {
+            var notes = diveLog.DiveLogDetails.Notes.Value;
+            if (!string.IsNullOrWhiteSpace(notes))
+            {
+                var splits = notes.Split(',');
+                foreach (var split in splits)
+                {
+                    if (split.Contains("DIVER-"))
+                    {
+                        // tolower and captialize initial
+                        var name = split.Replace("DIVER-", "").Trim();
+                        if (!string.IsNullOrWhiteSpace(name))
+                        {
+                            return char.ToUpper(name[0]) + name.Substring(1).ToLower();
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
         public static bool IsFreeDive(DiveLog diveLog) => diveLog.DiveLogHeader.Mode == 7;
 
         public static string GetSalinityType(DiveLog diveLog) => DiveLogEnvironmentUtils.GetSalinityString(diveLog.DiveLogHeader.Salinity);

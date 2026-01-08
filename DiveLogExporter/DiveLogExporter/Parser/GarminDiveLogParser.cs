@@ -27,15 +27,16 @@ namespace DiveLogExporter.Parser
             var buddy = splits.Length >= 2 ? splits[1] : "Solo";
             var location = splits.Length >= 3 ? splits[2] : "Unknown";
             var site = splits.Length >= 4 ? splits[3] : "Unknown";
+            var diver = splits.Length >= 5 ? splits[4] : "Jovery";
 
             decodeDemo.MesgEvent += fitListener.OnMesg;
             decodeDemo.Read(System.IO.File.OpenRead(inputPath));
 
             Console.WriteLine($"[{Name}] Found {fitListener.FitMessages.LapMesgs.Count} dives");
-            return ParseDiveLogs(fitListener.FitMessages, buddy, location, site);
+            return ParseDiveLogs(fitListener.FitMessages, diver, buddy, location, site);
         }
 
-        private List<GeneralDiveLog> ParseDiveLogs(FitMessages garminDiveLogs, string buddy, string location, string site)
+        private List<GeneralDiveLog> ParseDiveLogs(FitMessages garminDiveLogs, string diver, string buddy, string location, string site)
         {
             var res = new List<GeneralDiveLog>();
             var summaries = new List<GeneralDiveLogSummary>();
@@ -57,6 +58,7 @@ namespace DiveLogExporter.Parser
                     StartDate = new Dynastream.Fit.DateTime(garminLap.GetStartTime().GetTimeStamp(), i == 0 ? 0 : -3).ToString(),
                     EndDate = new Dynastream.Fit.DateTime(garminLap.GetStartTime().GetTimeStamp(), garminDiveSummary.GetBottomTime().Value + 2).ToString(),
                     DurationInSeconds = (int)Math.Floor(garminDiveSummary.GetBottomTime().Value) + (i == 0 ? 2 : 5),
+                    Diver = diver,
                     Buddy = buddy,
                     Location = location,
                     Site = site,

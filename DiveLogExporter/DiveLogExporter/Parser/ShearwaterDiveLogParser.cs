@@ -64,6 +64,7 @@ namespace DiveLogExporter.Parser
                 StartDate = details.DiveDate.ToString(),
                 EndDate = details.DiveDate.AddSeconds(footer.DiveTimeInSeconds).ToString(),
                 DurationInSeconds = footer.DiveTimeInSeconds,
+                Diver = Shearwater.ShearwaterUtils.GetDiver(shearwaterDiveLog) ?? "Jovery",
                 Buddy = details.Buddy.Value,
                 Location = details.Location.Value,
                 Site = details.Site.Value,

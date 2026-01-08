@@ -14,6 +14,8 @@
 
         public int? DurationInSeconds { get; set; }
 
+        public string? Diver { get; set; }
+
         public string? Buddy { get; set; }
 
         public string? Location { get; set; }
