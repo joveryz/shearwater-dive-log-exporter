@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using DiveLogExporter.Model;
 
-namespace DiveLogExporter.Exporter
+namespace DiveLogExporter.Parser
 {
-    public interface IDiveLogExporter
+    public interface IDiveLogParser
     {
         string Name { get; }
 
@@ -11,6 +11,6 @@ namespace DiveLogExporter.Exporter
 
         bool CanHandle(string inputPath);
 
-        List<GeneralDiveLog> Export(string inputPath);
+        List<GeneralDiveLog> Parse(string inputPath);
     }
 }

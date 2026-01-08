@@ -3,42 +3,91 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using DiveLogExporter.Exporter;
+using DiveLogExporter.Parser;
 using DiveLogExporter.Model;
 
 namespace DiveLogExporter
 {
-    internal class Program
+    public class Program
     {
         static int Main(string[] args)
         {
             // 1st arg: input directory with dive log files
             // 2nd arg: output directory
-            if (args.Length != 2)
+            if (args.Length != 1 && args.Length != 2)
             {
-                Console.WriteLine("Usage: DiveLogExporter <input directory with dive log files> <output directory>");
+                Console.WriteLine("Usage: DiveLogExporter <input directory> <output directory>");
+                Console.WriteLine("   or: DiveLogExporter <directory>");
                 return 1;
             }
 
+            var inputPath = args[0];
+            var outputPath = args.Length == 2 ? args[1] : args[0];
+
             var diveLogs = new List<GeneralDiveLog>();
-            var factory = new ExporterFactory();
+            var factory = new ParserFactory();
 
             // enumerate all files in the input directory, process each with the appropriate exporter
             // only process files at the top level, do not recurse into subdirectories
-            Directory.EnumerateFiles(args[0]).ToList().ForEach(file =>
+            Directory.EnumerateFiles(inputPath).ToList().ForEach(file =>
             {
-                var exporter = factory.GetExporter(file);
-                if (exporter != null)
+                var parser = factory.GetParser(file);
+                if (parser != null)
                 {
-                    Console.WriteLine($"[Main] Processing file: {file} with exporter: {exporter.GetType().Name}");
-                    var exportedDiveLogs = exporter.Export(file);
-                    diveLogs.AddRange(exportedDiveLogs);
-                    Console.WriteLine($"[Main] Exported {exportedDiveLogs.Count} dive logs from file: {file}");
+                    Console.WriteLine($"[Main] Processing file: {file} with parser: {parser.GetType().Name}");
+                    var parsedDiveLogs = parser.Parse(file);
+                    diveLogs.AddRange(parsedDiveLogs);
+                    Console.WriteLine($"[Main] Parsed {parsedDiveLogs.Count} dive logs from file: {file}");
                 }
             });
 
-            Console.WriteLine($"[Main] Total dive logs exported: {diveLogs.Count}");
+            AdjustDiveLogNumbers(diveLogs);
+            ExportDiveLogsToCsvFiles(diveLogs, outputPath);
 
+            Console.WriteLine($"[Main] Total dive logs parsed: {diveLogs.Count}");
+            return 0;
+        }
+
+        private static void AdjustDiveLogNumbers(List<GeneralDiveLog> diveLogs)
+        {
+            diveLogs = diveLogs.OrderBy(diveLog => DateTime.Parse(diveLog.Summary.StartDate)).ToList();
+
+            int currentNumber = 1;
+            foreach (var diveLog in diveLogs)
+            {
+                if (diveLog.Summary.Number >= 1000)
+                {
+                    continue;
+                }
+
+                if (diveLog.Summary.Number != currentNumber)
+                {
+                    Console.WriteLine($"[Main] Adjusting dive log number from {diveLog.Summary.Number} to {currentNumber}");
+                }
+
+                diveLog.Summary.Number = currentNumber;
+                if (diveLog.Tanks != null)
+                {
+                    foreach (var tank in diveLog.Tanks)
+                    {
+                        tank.Number = currentNumber;
+                    }
+                }
+                if (diveLog.Samples != null)
+                {
+                    foreach (var sample in diveLog.Samples)
+                    {
+                        sample.Number = currentNumber;
+                    }
+                }
+
+                currentNumber++;
+            }
+            diveLogs = diveLogs.OrderBy(diveLog => diveLog.Summary.Number).ToList();
+        }
+
+        private static void ExportDiveLogsToCsvFiles(List<GeneralDiveLog> diveLogs, string outputPath)
+        {
             var allSummaries = new StringBuilder();
             var allTanks = new StringBuilder();
             var allSamples = new StringBuilder();
@@ -46,7 +95,6 @@ namespace DiveLogExporter
             allTanks.AppendLine(new GeneralDiveLogTankInformation().ToCsvHeader());
             allSamples.AppendLine(new GeneralDiveLogSample().ToCsvHeader());
 
-            var outputPath = args[1];
             if (!outputPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
             {
                 outputPath += Path.DirectorySeparatorChar;
@@ -79,8 +127,6 @@ namespace DiveLogExporter
             File.WriteAllText(Path.Combine(outputPath, "general-dive-log-tanks.csv"), allTanks.ToString());
             File.WriteAllText(Path.Combine(outputPath, "general-dive-log-samples.csv"), allSamples.ToString());
             Console.WriteLine("[Main] Export complete");
-
-            return 0;
         }
     }
 }

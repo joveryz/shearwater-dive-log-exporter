@@ -103,10 +103,10 @@
     <Compile Include="Model\GeneralDiveLogSample.cs" />
     <Compile Include="Model\GeneralDiveLogSummary.cs" />
     <Compile Include="Model\GeneralDiveLogTankInformation.cs" />
-    <Compile Include="Exporter\ExporterFactory.cs" />
-    <Compile Include="Exporter\GarminDiveLogExporter.cs" />
-    <Compile Include="Exporter\IDiveLogExporter.cs" />
-    <Compile Include="Exporter\ShearwaterDiveLogExporter.cs" />
+    <Compile Include="Parser\ParserFactory.cs" />
+    <Compile Include="Parser\GarminDiveLogParser.cs" />
+    <Compile Include="Parser\IDiveLogParser.cs" />
+    <Compile Include="Parser\ShearwaterDiveLogParser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Shearwater\ShearwaterUtils.cs" />

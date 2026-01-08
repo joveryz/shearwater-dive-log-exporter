@@ -6,9 +6,9 @@ using DiveLogExporter.Garmin;
 using DiveLogExporter.Model;
 using Dynastream.Fit;
 
-namespace DiveLogExporter.Exporter
+namespace DiveLogExporter.Parser
 {
-    public class GarminDiveLogExporter : IDiveLogExporter
+    public class GarminDiveLogParser : IDiveLogParser
     {
         public string Name => "Garmin";
 
@@ -19,18 +19,23 @@ namespace DiveLogExporter.Exporter
             return System.IO.File.Exists(inputPath) && SupportedExtensions.Contains(Path.GetExtension(inputPath), StringComparer.OrdinalIgnoreCase);
         }
 
-        public List<GeneralDiveLog> Export(string inputPath)
+        public List<GeneralDiveLog> Parse(string inputPath)
         {
             var decodeDemo = new Decode();
             var fitListener = new FitListener();
+            var splits = Path.GetFileNameWithoutExtension(inputPath).Split('_');
+            var buddy = splits.Length >= 2 ? splits[1] : "Solo";
+            var location = splits.Length >= 3 ? splits[2] : "Unknown";
+            var site = splits.Length >= 4 ? splits[3] : "Unknown";
+
             decodeDemo.MesgEvent += fitListener.OnMesg;
-            decodeDemo.Read(new FileStream(inputPath, FileMode.Open));
+            decodeDemo.Read(System.IO.File.OpenRead(inputPath));
 
             Console.WriteLine($"[{Name}] Found {fitListener.FitMessages.LapMesgs.Count} dives");
-            return ExportDiveLogs(fitListener.FitMessages);
+            return ParseDiveLogs(fitListener.FitMessages, buddy, location, site);
         }
 
-        private List<GeneralDiveLog> ExportDiveLogs(FitMessages garminDiveLogs)
+        private List<GeneralDiveLog> ParseDiveLogs(FitMessages garminDiveLogs, string buddy, string location, string site)
         {
             var res = new List<GeneralDiveLog>();
             var summaries = new List<GeneralDiveLogSummary>();
@@ -52,9 +57,9 @@ namespace DiveLogExporter.Exporter
                     StartDate = new Dynastream.Fit.DateTime(garminLap.GetStartTime().GetTimeStamp(), i == 0 ? 0 : -3).ToString(),
                     EndDate = new Dynastream.Fit.DateTime(garminLap.GetStartTime().GetTimeStamp(), garminDiveSummary.GetBottomTime().Value + 2).ToString(),
                     DurationInSeconds = (int)Math.Floor(garminDiveSummary.GetBottomTime().Value) + (i == 0 ? 2 : 5),
-                    Buddy = "Tongbo",
-                    Location = "Beijing",
-                    Site = "HiDive",
+                    Buddy = buddy,
+                    Location = location,
+                    Site = site,
                     //Note = "Unknown",
 
                     // Environment Info

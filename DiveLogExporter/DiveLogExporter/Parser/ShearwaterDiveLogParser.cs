@@ -6,9 +6,9 @@ using Assets.Scripts.Persistence.LocalCache;
 using DiveLogExporter.Model;
 using DiveLogModels;
 
-namespace DiveLogExporter.Exporter
+namespace DiveLogExporter.Parser
 {
-    public class ShearwaterDiveLogExporter : IDiveLogExporter
+    public class ShearwaterDiveLogParser : IDiveLogParser
     {
         public string Name => "Shearwater";
 
@@ -21,7 +21,7 @@ namespace DiveLogExporter.Exporter
             return File.Exists(inputPath) && SupportedExtensions.Contains(Path.GetExtension(inputPath), StringComparer.OrdinalIgnoreCase);
         }
 
-        public List<GeneralDiveLog> Export(string inputPath)
+        public List<GeneralDiveLog> Parse(string inputPath)
         {
             var shearwaterDataService = new DataService(inputPath);
             var shearwaterDiveLogs = shearwaterDataService.GetDiveLogsWithRaw();
@@ -32,24 +32,24 @@ namespace DiveLogExporter.Exporter
             foreach (var shearwaterDiveLog in shearwaterDiveLogs)
             {
                 var shearwaterDiveLogSamples = shearwaterDataService.GetDiveLogRecordsWithRaw(shearwaterDiveLog.DiveID);
-                res.Add(ExportSingleDiveLog(shearwaterDiveLog, shearwaterDiveLogSamples));
+                res.Add(ParseSingleDiveLog(shearwaterDiveLog, shearwaterDiveLogSamples));
             }
 
             return res;
         }
 
 
-        private GeneralDiveLog ExportSingleDiveLog(DiveLog shearwaterDiveLog, List<DiveLogSample> shearwaterDiveLogSamples)
+        private GeneralDiveLog ParseSingleDiveLog(DiveLog shearwaterDiveLog, List<DiveLogSample> shearwaterDiveLogSamples)
         {
             return new GeneralDiveLog
             {
-                Summary = ExportSingleDiveLogSummary(shearwaterDiveLog),
-                Samples = ExportSingleDiveLogSampls(shearwaterDiveLog, shearwaterDiveLogSamples),
-                Tanks = ExportSingleDiveLogTanks(shearwaterDiveLog),
+                Summary = ParseSingleDiveLogSummary(shearwaterDiveLog),
+                Samples = ParseSingleDiveLogSamples(shearwaterDiveLog, shearwaterDiveLogSamples),
+                Tanks = ParseSingleDiveLogTanks(shearwaterDiveLog),
             };
         }
 
-        private GeneralDiveLogSummary ExportSingleDiveLogSummary(DiveLog shearwaterDiveLog)
+        private GeneralDiveLogSummary ParseSingleDiveLogSummary(DiveLog shearwaterDiveLog)
         {
             var header = shearwaterDiveLog.DiveLogHeader;
             var footer = shearwaterDiveLog.DiveLogFooter;
@@ -109,7 +109,7 @@ namespace DiveLogExporter.Exporter
             return res;
         }
 
-        private List<GeneralDiveLogSample> ExportSingleDiveLogSampls(DiveLog shearwaterDiveLog, List<DiveLogSample> shearwaterDiveLogSamples)
+        private List<GeneralDiveLogSample> ParseSingleDiveLogSamples(DiveLog shearwaterDiveLog, List<DiveLogSample> shearwaterDiveLogSamples)
         {
             var res = new List<GeneralDiveLogSample>();
             //var random = new Random();
@@ -156,7 +156,7 @@ namespace DiveLogExporter.Exporter
             return res.Any() ? res : null;
         }
 
-        private List<GeneralDiveLogTankInformation> ExportSingleDiveLogTanks(DiveLog shearwaterDiveLog)
+        private List<GeneralDiveLogTankInformation> ParseSingleDiveLogTanks(DiveLog shearwaterDiveLog)
         {
             var res = new List<GeneralDiveLogTankInformation>();
             if (!Shearwater.ShearwaterUtils.IsFreeDive(shearwaterDiveLog))
