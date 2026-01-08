@@ -1,4 +1,5 @@
-﻿using Assets.Scripts.DiveLogs.Utils.DiveLogUtils;
+﻿using System.Linq;
+using Assets.Scripts.DiveLogs.Utils.DiveLogUtils;
 using Assets.Scripts.DiveLogs.Utils.Gases;
 using Assets.Scripts.Utility;
 using Assets.ShearwaterCloud.Modules.Graphs.DiveGraph.GraphAssembly.GraphDataAssembly.SeriesSampleAssemblers;
@@ -70,6 +71,18 @@ namespace Shearwater
                 }
             }
 
+            return null;
+        }
+
+        public static string GetNotes(DiveLog diveLog)
+        {
+            var notes = diveLog.DiveLogDetails.Notes.Value;
+            if (!string.IsNullOrWhiteSpace(notes))
+            {
+                var splits = notes.Split(',');
+                var filteredNotes = splits.Where(s => !s.Contains("DIVER-")).ToList();
+                return string.Join(",", filteredNotes).Trim();
+            }
             return null;
         }
 

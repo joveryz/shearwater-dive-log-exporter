@@ -68,7 +68,7 @@ namespace DiveLogExporter.Parser
                 Buddy = details.Buddy.Value,
                 Location = details.Location.Value,
                 Site = details.Site.Value,
-                Note = details.Notes.Value,
+                Note = Shearwater.ShearwaterUtils.GetNotes(shearwaterDiveLog),
 
                 // Environment Info
                 DepthInMetersMax = footer.MaxDiveDepth,

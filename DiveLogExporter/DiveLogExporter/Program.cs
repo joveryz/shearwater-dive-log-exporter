@@ -55,11 +55,6 @@ namespace DiveLogExporter
             int currentNumber = 1;
             foreach (var diveLog in diveLogs)
             {
-                if (diveLog.Summary.Number >= 1000)
-                {
-                    continue;
-                }
-
                 if (diveLog.Summary.Number != currentNumber)
                 {
                     Console.WriteLine($"[Main] Adjusting dive log number from {diveLog.Summary.Number} to {currentNumber}");
