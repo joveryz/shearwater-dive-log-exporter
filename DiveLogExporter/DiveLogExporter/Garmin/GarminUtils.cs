@@ -28,7 +28,7 @@ namespace DiveLogExporter.Garmin
             var id = deviceInfo.GetGarminProduct().Value;
             if (GarminProductNames.TryGetValue(id, out var productName))
             {
-                return "Garmin " + productName;
+                return productName;
             }
 
             return "Unknown";
